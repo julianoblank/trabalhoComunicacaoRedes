@@ -6,6 +6,9 @@ import { HomePage } from './home.page';
 
 import { HomePageRoutingModule } from './home-routing.module';
 
+import { Geolocation } from '@ionic-native/geolocation/ngx';
+import { WifiWizard2 } from '@ionic-native/wifi-wizard-2/ngx';
+
 
 @NgModule({
   imports: [
@@ -14,6 +17,7 @@ import { HomePageRoutingModule } from './home-routing.module';
     IonicModule,
     HomePageRoutingModule
   ],
-  declarations: [HomePage]
+  declarations: [HomePage],
+  providers: [Geolocation,WifiWizard2]
 })
 export class HomePageModule {}
