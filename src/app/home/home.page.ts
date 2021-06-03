@@ -1,7 +1,8 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 
 import { Geolocation } from '@ionic-native/geolocation/ngx';
-//import { WifiWizard2 } from '@ionic-native/wifi-wizard-2/ngx';
+import { NativeStorage } from '@ionic-native/native-storage/ngx';
+
 declare var WifiWizard2: any;
 
 @Component({
@@ -16,13 +17,16 @@ export class HomePage {
   results = [];
   marker: google.maps.Marker;
   content: any;
-  //WifiWizard2: WifiWizard2;
+  dados: any;
+ 
   @ViewChild('map', {read: ElementRef, static: false}) mapRef: ElementRef
 
-  constructor(private geolocation: Geolocation) {}
+  constructor(private geolocation: Geolocation, private nativeStorage: NativeStorage) {}
 
   ionViewWillEnter(){
-    this.exibirMapa();
+    this.getNetworks();
+    this.exibirMapa(); 
+    this.ondeEstive();
   }
 
   exibirMapa(){
@@ -39,7 +43,6 @@ export class HomePage {
   buscarPosicao(){
     this.geolocation.getCurrentPosition().then((resp) => {
       this.minhaPosicao = new google.maps.LatLng(resp.coords.latitude, resp.coords.longitude);
-      this.getNetworks();
       this.irParaMinhaPosicao();
      }).catch((error) => {
        console.log('Error getting location', error);
@@ -53,7 +56,7 @@ export class HomePage {
     this.marker = new google.maps.Marker({
       position: this.minhaPosicao,
       clickable: true,
-      title: 'Onde Estive',
+      title: 'Onde Estou',
       animation: google.maps.Animation.BOUNCE,
       map: this.map
     });   
@@ -83,10 +86,28 @@ export class HomePage {
     let infoWindow = new google.maps.InfoWindow({
       content: content
     });
-
+    this.gravarDados(content);
     google.maps.event.addListener(marker, 'click', () => {
       infoWindow.open(this.map, marker);
     });
   }
 
+  gravarDados(content){
+    this.nativeStorage.setItem('dados', {dadosWifi: content, minhaPosicao: this.minhaPosicao})
+  }
+
+  ondeEstive(){
+    this.nativeStorage.getItem('dados').then(
+      data => {
+        this.marker = new google.maps.Marker({
+          position: data.minhaPosicao,
+          clickable: true,
+          title: 'Onde Estive',
+          animation: google.maps.Animation.BOUNCE,
+          map: this.map
+        });
+
+        this.addInfoWindow(this.marker,data.dadosWifi);
+      });
+  }
 }

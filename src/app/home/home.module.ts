@@ -8,6 +8,8 @@ import { HomePageRoutingModule } from './home-routing.module';
 
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { WifiWizard2 } from '@ionic-native/wifi-wizard-2/ngx';
+import { NativeStorage } from '@ionic-native/native-storage/ngx';
+
 
 
 @NgModule({
@@ -18,6 +20,6 @@ import { WifiWizard2 } from '@ionic-native/wifi-wizard-2/ngx';
     HomePageRoutingModule
   ],
   declarations: [HomePage],
-  providers: [Geolocation,WifiWizard2]
+  providers: [Geolocation,WifiWizard2,NativeStorage]
 })
 export class HomePageModule {}
