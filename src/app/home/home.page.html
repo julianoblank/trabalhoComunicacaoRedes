@@ -7,12 +7,5 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div>
-    <ion-list>
-      <ion-item *ngFor="let data of results">
-          {{data.frequency}}
-      </ion-item>
-    </ion-list>
-  </div>
   <div #map id="map"></div>
 </ion-content>

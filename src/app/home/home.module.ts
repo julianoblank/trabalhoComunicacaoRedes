@@ -9,6 +9,7 @@ import { HomePageRoutingModule } from './home-routing.module';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { WifiWizard2 } from '@ionic-native/wifi-wizard-2/ngx';
 import { NativeStorage } from '@ionic-native/native-storage/ngx';
+import { IonicStorageModule } from '@ionic/storage';
 
 
 
@@ -17,8 +18,11 @@ import { NativeStorage } from '@ionic-native/native-storage/ngx';
     CommonModule,
     FormsModule,
     IonicModule,
-    HomePageRoutingModule
-  ],
+    HomePageRoutingModule,
+    IonicStorageModule.forRoot({
+      name: 'db',
+         driverOrder: ['sqlite', 'indexeddb',  'websql']
+    })],
   declarations: [HomePage],
   providers: [Geolocation,WifiWizard2,NativeStorage]
 })
