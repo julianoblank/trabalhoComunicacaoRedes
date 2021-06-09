@@ -83,6 +83,7 @@ export class HomePage {
           }
        });
       });
+      this.ssid = SSID;
       this.content = "<strong>Informações do Wifi conectado:</strong> <br><strong>SSID:</strong>" + String(SSID) + "<br> <strong>BSSID:</strong>" + String(BSSID) + 
       "<br> <strong>Wifi IP: </strong>" + String(infoIp) + "<br> <strong>Wifi Subnet:</strong> " + String(infoSubnet) +
       "<br><strong>Frequência:</strong>" + String(frequencia) + "<br><strong>Nivel do sinal</strong> " + String(nivel) + "<br><strong>Típos de segurança</strong> " + String(seguranca);
