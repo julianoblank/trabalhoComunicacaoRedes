@@ -20,7 +20,7 @@ import { IonicStorageModule } from '@ionic/storage';
     IonicModule,
     HomePageRoutingModule,
     IonicStorageModule.forRoot({
-      name: 'db',
+      name: 'Mydb',
          driverOrder: ['sqlite', 'indexeddb',  'websql']
     })],
   declarations: [HomePage],

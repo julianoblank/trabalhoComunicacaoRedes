@@ -1,10 +1,8 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 
 import { Geolocation } from '@ionic-native/geolocation/ngx';
-import { NativeStorage } from '@ionic-native/native-storage/ngx';
 import { Storage } from '@ionic/storage';
-
-declare var WifiWizard2: any;
+import { WifiWizard2 } from '@ionic-native/wifi-wizard-2/ngx';
 
 @Component({
   selector: 'app-home',
@@ -24,18 +22,17 @@ export class HomePage {
  
   @ViewChild('map', {read: ElementRef, static: false}) mapRef: ElementRef
 
-  constructor(private geolocation: Geolocation, private nativeStorage: NativeStorage, private storage: Storage) {}
+  constructor(private geolocation: Geolocation, private wifiWizard2: WifiWizard2, private storage: Storage) {}
 
   ionViewWillEnter(){
-    this.getNetworks();
     this.exibirMapa();
   }
 
   exibirMapa(){
-    const posicao = new google.maps.LatLng(-22.194082, -48.778885);
+    const posicao = new google.maps.LatLng(-29.7131, -52.4316);
     const opcoes = {
       center: posicao,
-      zoom: 20,
+      zoom: 10,
       disableDefaultUI: true
     };
     this.map = new google.maps.Map(this.mapRef.nativeElement, opcoes);
@@ -53,35 +50,45 @@ export class HomePage {
 
   irParaMinhaPosicao(){
     this.map.setCenter(this.minhaPosicao);
-    this.map.setZoom(15);
-
-    /*this.marker = new google.maps.Marker({
-      position: this.minhaPosicao,
-      clickable: true,
-      title: 'Onde Estou',
-      animation: google.maps.Animation.BOUNCE,
-      map: this.map
-    });*/
-
+    this.map.setZoom(13);
+    this.getNetworks();
   }
 
   async getNetworks() {
+    let SSID;
+    let BSSID;
+    let infoIp;
+    let infoSubnet;
+    let frequencia;
+    let nivel;
+    let seguranca;
+
     try {
-      let SSID = await WifiWizard2.getConnectedSSID();
-      this.ssid = SSID;
-      let BSSID = await WifiWizard2.getConnectedBSSID();
-      let info = await WifiWizard2.getWifiIPInfo();
-      let scan = await WifiWizard2.scan();
-      scan.forEach(element => {
-        this.content = "<strong>Informações do Wifi conectado:</strong> <br><strong>SSID:</strong>" + String(SSID) + "<br> <strong>BSSID:</strong>" + String(BSSID) + 
-      "<br> <strong>Wifi IP: </strong>" + String(info.ip) + "<br> <strong>Wifi Subnet:</strong> " + String(info.subnet) +
-      "<br><strong>Frequência:</strong>" + String(element.frequency) + "<br><strong>Nivel do sinal</strong> " + String(element.level);
+      await this.wifiWizard2.getConnectedSSID().then( value => { 
+        SSID = value; 
       });
+      await  this.wifiWizard2.getConnectedBSSID().then( value => { 
+        BSSID = value; 
+      });
+      await this.wifiWizard2.getWifiIPInfo().then( value => { 
+        infoIp = value.ip;
+        infoSubnet = value.subnet 
+      });
+      await this.wifiWizard2.scan().then( value => {
+        value.forEach(element => {
+          if(element.SSID == SSID){
+            frequencia = element.frequency;
+            nivel = element.level;
+            seguranca = element.capabilities;
+          }
+       });
+      });
+      this.content = "<strong>Informações do Wifi conectado:</strong> <br><strong>SSID:</strong>" + String(SSID) + "<br> <strong>BSSID:</strong>" + String(BSSID) + 
+      "<br> <strong>Wifi IP: </strong>" + String(infoIp) + "<br> <strong>Wifi Subnet:</strong> " + String(infoSubnet) +
+      "<br><strong>Frequência:</strong>" + String(frequencia) + "<br><strong>Nivel do sinal</strong> " + String(nivel) + "<br><strong>Típos de segurança</strong> " + String(seguranca);
       this.gravarDados(this.ssid);
       this.addInfoWindow(this.marker, this.content);
-      
     } catch (error) {
-      console.log('Error getting network', error);
     }
   }
 
@@ -96,59 +103,39 @@ export class HomePage {
     });
   }
 
-  /*async gravarDados(content){
-    await this.dados.forEach(element => {
-      this.nativeStorage.setItem('ssids', {ssids: element})
-    });
-    
-    await this.nativeStorage.getItem('ssids').then(
-      data => {
-        this.dados.forEach(element => {         
-            this.nativeStorage.setItem(data.ssids, {dadosWifi: content, minhaPosicao: this.minhaPosicao})
-        });
-    });
-  };*/
-
   gravarDados(SSID){
-    this.dados.push(this.minhaPosicao,this.content);
-    this.storage.set(SSID, this.dados);
-    this.ondeEstive();
+    try {
+      this.dados.push(this.minhaPosicao,this.content);
+      this.storage.set(SSID, this.dados);
+      this.ondeEstive();
+    }catch (error) {
+      alert('Erro em gravar os dados :'+ error);
+    }
 
   };
 
-  /*async ondeEstive(){
-    await this.dados.forEach(element => {
-      this.nativeStorage.getItem(element).then(
-        data => {
-          this.marker = new google.maps.Marker({
-            position: data.minhaPosicao,
-            clickable: true,
-            title: 'Onde Estive',
-            animation: google.maps.Animation.BOUNCE,
-            map: this.map
-          });
-          this.addInfoWindow(this.marker,data.dadosWifi);
-      });
-    });
-  }*/
   ondeEstive(){
-    this.storage.forEach( (value, key) => {
-     //alert(key); 
-    // alert(value);//store these values as you wish
-     
-     let info = this.storage.get(key);
-     info.then(
-       data => {
-           this.marker = new google.maps.Marker({
-           position: data[0],
-           clickable: true,
-           title: 'Onde Estive',
-           animation: google.maps.Animation.BOUNCE,
-           map: this.map
-         });
-       this.addInfoWindow(this.marker,data[1]);
-     });
-     
-    });
+    try {
+          this.storage.forEach( (value, key) => {
+          //alert(key); 
+          // alert(value);//store these values as you wish
+          
+          let info = this.storage.get(key);
+          info.then(
+            data => {
+                this.marker = new google.maps.Marker({
+                position: data[0],
+                clickable: true,
+                title: 'Onde Estive',
+                animation: google.maps.Animation.BOUNCE,
+                map: this.map
+              });
+            this.addInfoWindow(this.marker,data[1]);
+          });
+          
+          });
+        } catch(error){
+          alert('Erro em buscar onde estive :'+ error);
+        }   
  }
 }
